@@ -12,6 +12,18 @@ CORS(app)  # Allow cross-origin requests
 SENDER_EMAIL = "matus.benky@gmail.com"
 EMAIL_PASSWORD = "qnaq uomr pmva jajp"
 
+CURRENT_QUESTION = ""
+
+def log(message):
+    print(message)
+
+@app.route('/set-current-question', methods=['POST'])
+def set_current_question():
+    global CURRENT_QUESTION
+    CURRENT_QUESTION = request.get_json().get('question')
+    log("Setting current question to: " + CURRENT_QUESTION)
+    return jsonify({"message": "Current question updated successfully"}), 200
+
 # Temporary storage for verification codes and parent names
 verification_codes = {}
 parent_names = {}
@@ -85,8 +97,7 @@ def submit_parent():
     parent_names[email] = {"parent_name": parent_name, "email": email , "votes": {}}
     return jsonify({"message": "Parent name submitted successfully!"})
 
-def log(message):
-    print(message)
+
 
 @app.route('/number-of-votes', methods=['POST'])
 def number_of_votes():
@@ -110,20 +121,21 @@ def number_of_votes():
 #   ]
 # ]
 
-# @app.route('/get-answers', methods=['POST'])    
-# def get_answers():
-#     current_question = request.get_json().get('question')
-#     answers = []
-#     for email in parent_names:
-#         if parent_names[email]["votes"].get(current_question):
-#             vote = parent_names[email]["votes"][current_question]
-#             answers.append({
-#                 "answer": vote["vote"],
-#                 "parent_name": parent_names[email]["parent_name"],
-#                 "timeTaken": vote["time_left"]
-#                 "TimeTime": "Countdown"
-#             })
-#     return jsonify(answers)
+@app.route('/get-answers', methods=['POST'])    
+def get_answers():
+    answers = []
+    for email in parent_names:
+        if parent_names[email]["votes"].get(CURRENT_QUESTION):
+            vote = parent_names[email]["votes"][CURRENT_QUESTION]
+            if vote['vote'] != "F" or vote['vote'] != ["F","F","F","F"]:
+                answers.append({
+                    "answer": vote["vote"],
+                    "parent_name": parent_names[email]["parent_name"],
+                    "timeTaken": vote["time_left"],
+                    "TimeTime": vote["count_up"],
+                })
+    log(answers)
+    return jsonify(answers)
 
 
 @app.route('/submit-vote', methods=['POST'])

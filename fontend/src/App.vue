@@ -58,7 +58,11 @@
               <button @click="addVoteRozstrel('B')" class="vote-btn">B</button>
               <button @click="addVoteRozstrel('C')" class="vote-btn">C</button>
               <button @click="addVoteRozstrel('D')" class="vote-btn">D</button>
-              <button @click="submitVote" class="btn-primary">Submit</button>
+              <button @click="submitVote" :class="{
+                'btn-primary': isSubmitValid,
+                'btn-primary-disabled': !isSubmitValid
+              }
+                ">Submit</button>
               <button @click="votesRozstrel = []" class="btn-secondary">Clear</button>
             </div>
           </div>
@@ -77,7 +81,10 @@
               <button @click="votePomoc = 'B'" class="vote-btn">B</button>
               <button @click="votePomoc = 'C'" class="vote-btn">C</button>
               <button @click="votePomoc = 'D'" class="vote-btn">D</button>
-              <button @click="submitVote" class="btn-primary">Submit</button>
+              <button @click="submitVote" :class="{
+                'btn-primary': isSubmitValid,
+                'btn-primary-disabled': !isSubmitValid
+              }">Submit</button>
               <button @click="votePomoc = ''" class="btn-secondary">Clear</button>
             </div>
           </div>
@@ -105,10 +112,6 @@ export default {
       codeSent: false,
       parentNameSubmitted: false,
       votesRozstrel: [],
-      votes: ["", "", "", ""],
-      times: [],
-      startTime: new Date().toLocaleTimeString(),
-      currentVoteIndex: 0,
       votingType: "rozstrel",
       question: "", // Holds the currently displayed question
       time_left: 0,
@@ -121,6 +124,13 @@ export default {
   computed: {
     isEmailValid() {
       return this.validateSchoolEmail(this.email);
+    },
+    isSubmitValid() {
+      if (this.type == "rozstrel") {
+        return this.votesRozstrel.length == 4;
+      } else {
+        return this.votePomoc != "";
+      }
     },
   },
   mounted() {
@@ -141,18 +151,25 @@ export default {
     clearInterval(this.answeredInterval);
   },
   methods: {
-    submitVote() {
-      if (!this.submitted) {
+    submitVote(clicked) {
+      if (!this.submitted && this.isVerified && this.parentNameSubmitted) {
         if (this.type == "rozstrel") {
-          this.submitVotesRozstrel();
+          this.submitVotesRozstrel(clicked);
         } else {
-          this.submitVotesPomoc();
+          this.submitVotesPomoc(clicked);
         }
       }
     },
 
-    async submitVotesPomoc() {
+    async submitVotesPomoc(clicked) {
       try {
+        if (!this.isSubmitValid && clicked) {
+          return;
+        }
+        if (!this.isSubmitValid) {
+          console.log(this.votePomoc);
+          this.votePomoc = "N/A";
+        }
         const response = await axios.post(this.url + "/submit-vote", {
           votes: this.votePomoc,
           // type: this.votingType,
@@ -173,8 +190,16 @@ export default {
       }
     },
 
-    async submitVotesRozstrel() {
+    async submitVotesRozstrel(clicked) {
       try {
+        if (!this.isSubmitValid && clicked) {
+          return;
+        } 
+        if (!this.isSubmitValid) {
+          console.log(this.votesRozstrel);
+          this.votesRozstrel = ["N/A", "N/A", "N/A", "N/A"];
+        }
+
         const response = await axios.post(this.url + "/submit-vote", {
           votes: this.votesRozstrel,
           // type: this.votingType,
@@ -325,6 +350,8 @@ export default {
 
 /* Base styles */
 .body {
+  width: 100vw;
+  height: 100vh;
   padding: 0;
   margin: 0;
   background-color: #121212;
@@ -417,6 +444,11 @@ button {
 
 button.btn-primary {
   background-color: #bb86fc;
+  color: #ffffff;
+}
+
+button.btn-primary-disabled {
+  background-color: #bb86fc63;
   color: #ffffff;
 }
 
