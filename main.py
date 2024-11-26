@@ -85,16 +85,6 @@ def submit_parent():
     parent_names[email] = {"parent_name": parent_name, "email": email , "votes": {}}
     return jsonify({"message": "Parent name submitted successfully!"})
 
-@app.route('/get-question', methods=['GET'])
-def get_qeustion():
-    return jsonify({
-        "question": random.choice(["Asadadad", "Badadad", "Cadadad", "Dadaddad"]),
-        "time_left": random.randint(1, 10),
-        # "type": random.choice(["rozstrel", "pomoc","waiting", "end"]),
-        # "type": random.choice(["rozstrel"]),
-        "type": random.choice(["pomoc"]),
-        })
-
 def log(message):
     print(message)
 
@@ -109,6 +99,32 @@ def number_of_votes():
             answered += 1
     
     return jsonify({"answered": answered, "total": len(parent_names)})
+
+
+# GET answers for a last question
+# [
+#   [
+#     "answer": "ACDB",
+#     "parent_name": "Natanael Feje\u0161",
+#     "timeTaken": 3.67
+#   ]
+# ]
+
+# @app.route('/get-answers', methods=['POST'])    
+# def get_answers():
+#     current_question = request.get_json().get('question')
+#     answers = []
+#     for email in parent_names:
+#         if parent_names[email]["votes"].get(current_question):
+#             vote = parent_names[email]["votes"][current_question]
+#             answers.append({
+#                 "answer": vote["vote"],
+#                 "parent_name": parent_names[email]["parent_name"],
+#                 "timeTaken": vote["time_left"]
+#                 "TimeTime": "Countdown"
+#             })
+#     return jsonify(answers)
+
 
 @app.route('/submit-vote', methods=['POST'])
 def submit_vote():

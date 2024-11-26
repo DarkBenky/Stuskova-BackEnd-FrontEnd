@@ -249,6 +249,9 @@ func main() {
                     continue
                 }
                 question.Type = args[1]
+                if question.Type == "end" {
+                    question.Question = "END"
+                }
                 success.Printf("Type set to: %s\n", args[1])
 
             case "status":
