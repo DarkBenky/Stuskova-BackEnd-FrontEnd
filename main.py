@@ -10,7 +10,7 @@ CORS(app)  # Allow cross-origin requests
 
 # Email Configuration
 SENDER_EMAIL = "matus.benky@gmail.com"
-EMAIL_PASSWORD = "qnaq uomr pmva jajp"
+EMAIL_PASSWORD = "qnaq uomr pmva jajp selt"
 
 CURRENT_QUESTION = ""
 
