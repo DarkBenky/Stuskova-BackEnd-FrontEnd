@@ -45,7 +45,8 @@
           <div v-if="type === 'rozstrel'" class="fade-transition">
             <h3>Answered {{ answered }} / {{ total }} </h3>
             <h2 class="text-gradient">Rozstrel</h2>
-            <h3>Time left: {{ time_left / 1000000000 }} seconds</h3>
+            <h3 v-if="count_up == false">Time left: {{ time_left / 1000000000 }} seconds</h3>
+            <h3 v-else>Time: {{ time_left / 1000000000 }} seconds</h3>
             <h3>{{ question }}</h3>
             <h2 class="vote-display">
               <span v-for="(vote, index) in votesRozstrel" :key="index">
@@ -64,7 +65,8 @@
           <div v-if="type === 'pomoc'">
             <h3>Answered {{ answered }} / {{ total }} </h3>
             <h2 class="text-gradient">Pomoc</h2>
-            <h3>Time left: {{ time_left / 1000000000 }} seconds</h3>
+            <h3 v-if="count_up == false">Time left: {{ time_left / 1000000000 }} seconds</h3>
+            <h3 v-else>Time: {{ time_left / 1000000000 }} seconds</h3>
             <h3>{{ question }}</h3>
             <h2 class="vote-display">
               <span v-if="votePomoc">{{ votePomoc }}</span>
@@ -159,6 +161,7 @@ export default {
           parent_name: this.parentName,
           time_left: this.time_left,
           question: this.question,
+          count_up: this.count_up,
         });
         // alert(response.data.message);
         console.log(response.data.message);
@@ -180,6 +183,7 @@ export default {
           parent_name: this.parentName,
           time_left: this.time_left,
           question: this.question,
+          count_up: this.count_up,
         });
         // alert(response.data.message);
         console.log(response.data.message);
@@ -225,6 +229,7 @@ export default {
             this.submitted = false;
             this.type = response.data.type;
             this.time_left = response.data.time_left;
+            this.count_up = response.data.count_up;
             this.question = newQuestion; // Update only if the question has changed
           }
         })

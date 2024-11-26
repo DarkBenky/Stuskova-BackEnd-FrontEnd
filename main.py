@@ -137,6 +137,7 @@ def submit_vote():
         email = data.get('email')
         time_left = data.get('time_left')
         question = data.get('question')
+        count_up = data.get('count_up')
         parent_name = parent_names[email]["parent_name"]
 
         log(f"Question: {question}")
@@ -153,7 +154,7 @@ def submit_vote():
             return jsonify({'error': 'Parent already voted'}), 400
         
         # parent_names[email]["votes"][question] = {"vote":votes, "type":vote_type, "time_left":time_left}
-        parent_names[email]["votes"][question] = {'vote':votes, 'type':vote_type, 'time_left':time_left}
+        parent_names[email]["votes"][question] = {'vote':votes, 'type':vote_type, 'time_left':time_left, 'count_up':count_up}
 
         print(parent_names)
 

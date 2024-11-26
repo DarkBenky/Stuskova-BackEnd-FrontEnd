@@ -25,7 +25,7 @@ func printHelp() {
     help := color.New(color.FgCyan)
     help.Println("Available commands:")
     help.Println("  question <text>          - Set new question")
-    help.Println("  time <seconds|last|pause>- Set time left or control timer")
+    help.Println("  time <seconds|last|pause|countUp>- Set time left or control timer")
     help.Println("  type <type>              - Set type (pomoc/rozstrel/waiting/end)")
     help.Println("  status                   - Show current question status")
     help.Println("  logging <on/off>         - Enable/disable request logging")
@@ -38,6 +38,7 @@ type Question struct {
     TimeLeft  time.Duration `json:"time_left"`
     Type      string        `json:"type"`
     StartTime time.Time     `json:"start_time"`
+    CountUp   bool          `json:"count_up"`
 }
 
 var Pause = false
@@ -47,6 +48,7 @@ var question = Question{
     TimeLeft:  time.Second * 30,
     Type:      "pomoc",
     StartTime: time.Now(),
+    CountUp:   false,
 }
 
 func getQuestion(c echo.Context) error {
@@ -55,8 +57,13 @@ func getQuestion(c echo.Context) error {
         TimeLeft:  question.TimeLeft,
         Type:      question.Type,
         StartTime: question.StartTime,
+        CountUp:   question.CountUp,
     }
     if Pause {
+        return c.JSON(http.StatusOK, q)
+    }
+    if question.CountUp {
+        q.TimeLeft = time.Since(question.StartTime)
         return c.JSON(http.StatusOK, q)
     }
     q.TimeLeft = question.TimeLeft - time.Since(question.StartTime)
@@ -107,6 +114,7 @@ func main() {
         readline.PcItem("time",
             readline.PcItem("last"),
             readline.PcItem("pause"),
+            readline.PcItem("countUp"),
         ),
         readline.PcItem("type",
             readline.PcItem("pomoc"),
@@ -204,13 +212,14 @@ func main() {
 
             case "time":
                 if len(args) != 2 {
-                    errorC.Println("Usage: time <seconds|last|pause>")
+                    errorC.Println("Usage: time <seconds|last|pause|countUp>")
                     continue
                 }
                 switch args[1] {
                 case "last":
                     question.TimeLeft = time.Duration(lastTime) * time.Second
                     question.StartTime = time.Now()
+                    question.CountUp = false
                     success.Printf("Time left set to: %d seconds\n", lastTime)
                 case "pause":
                     Pause = !Pause
@@ -219,8 +228,11 @@ func main() {
                     } else {
                         success.Println("Question unpaused")
                         question.StartTime = time.Now()
-                        question.TimeLeft = time.Duration(lastTime) * time.Second
                     }
+                case "countUp":
+                    question.StartTime = time.Now()
+                    question.CountUp = true
+                    success.Println("Counting up")
                 default:
                     timeLeft, err := strconv.Atoi(args[1])
                     if err != nil || timeLeft < 0 {
@@ -230,6 +242,7 @@ func main() {
                     lastTime = timeLeft
                     question.TimeLeft = time.Duration(timeLeft) * time.Second
                     question.StartTime = time.Now()
+                    question.CountUp = false
                     success.Printf("Time left set to: %d seconds\n", timeLeft)
                 }
 
@@ -257,11 +270,16 @@ func main() {
             case "status":
                 info.Println("Current question status:")
                 info.Printf("Question: %s\n", question.Question)
-                timeLeft := question.TimeLeft - time.Since(question.StartTime)
-                if timeLeft < 0 {
-                    timeLeft = 0
+                if question.CountUp {
+                    elapsedTime := time.Since(question.StartTime)
+                    info.Printf("Elapsed time: %d seconds\n", int(elapsedTime.Seconds()))
+                } else {
+                    timeLeft := question.TimeLeft - time.Since(question.StartTime)
+                    if timeLeft < 0 {
+                        timeLeft = 0
+                    }
+                    info.Printf("Time left: %d seconds\n", int(timeLeft.Seconds()))
                 }
-                info.Printf("Time left: %d seconds\n", int(timeLeft.Seconds()))
                 info.Printf("Type: %s\n", question.Type)
                 info.Printf("Logging: %v\n", loggingEnabled)
 
